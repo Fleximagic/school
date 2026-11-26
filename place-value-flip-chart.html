@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Place value flip chart: 100 to 1000</title>
+<style>
+:root{
+  --bg:#f1f5fb;--surface:#ffffff;--ink:#14213d;--muted:#52607a;--line:#d5deee;
+  --th:#7a45c8;--h:#2f6fed;--t:#0f8a74;--o:#d3600b;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0f1626;--surface:#1a2440;--ink:#eaf0ff;--muted:#a9b6d3;--line:#2c3a60;--th:#8f5fdc;--h:#3f7cf2;--t:#12907a;--o:#d96a14}
+}
+:root[data-theme="dark"]{--bg:#0f1626;--surface:#1a2440;--ink:#eaf0ff;--muted:#a9b6d3;--line:#2c3a60;--th:#8f5fdc;--h:#3f7cf2;--t:#12907a;--o:#d96a14}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Fredoka","Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.4}
+main{max-width:860px;margin:0 auto;padding:20px 14px 40px}
+h1{font-size:clamp(1.5rem,5vw,2.1rem);margin:0 0 4px;font-weight:700}
+.sub{margin:0 0 18px;color:var(--muted)}
+.readout{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:14px 16px;text-align:center}
+.num{font-size:clamp(2.6rem,12vw,4.4rem);font-weight:700;line-height:1;letter-spacing:.02em}
+.words{font-size:clamp(1.1rem,3.6vw,1.5rem);margin-top:6px;font-weight:600}
+.expanded{margin-top:6px;color:var(--muted);font-size:clamp(1rem,3.2vw,1.25rem)}
+.expanded b{font-weight:700}
+.c-th{color:var(--th)}.c-h{color:var(--h)}.c-t{color:var(--t)}.c-o{color:var(--o)}
+.chart{display:grid;grid-template-columns:.8fr 1fr 1fr 1fr;gap:8px;margin-top:16px}
+.col{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:10px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:opacity .2s}
+.col.dim{opacity:.55}
+.col h2{margin:0;font-size:clamp(.95rem,3.4vw,1.2rem);font-weight:600}
+.worth{font-size:.85rem;color:var(--muted);margin-top:-6px}
+.card{width:min(100%,110px);aspect-ratio:3/4;perspective:700px}
+.inner{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.card.flipped .inner{transform:rotateX(180deg)}
+.face{position:absolute;inset:0;display:grid;place-items:center;border-radius:12px;color:#fff;font-weight:700;font-size:clamp(2.6rem,13vw,4.6rem);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face.back{transform:rotateX(180deg)}
+.col[data-k=th] .face{background:var(--th)}.col[data-k=h] .face{background:var(--h)}
+.col[data-k=t] .face{background:var(--t)}.col[data-k=o] .face{background:var(--o)}
+.btns{display:flex;gap:8px}
+.btns button{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:1.5rem;font-weight:700;cursor:pointer;line-height:1}
+.btns button:disabled{opacity:.3;cursor:not-allowed}
+.btns button:not(:disabled):hover{border-color:var(--ink)}
+.blocks{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;align-content:flex-end;min-height:118px;width:100%}
+.blocks.off{display:none}
+.flat{width:34px;height:34px;border-radius:4px;background:var(--h);background-image:linear-gradient(#ffffff55 1px,transparent 1px),linear-gradient(90deg,#ffffff55 1px,transparent 1px);background-size:3.4px 3.4px}
+.rod{width:10px;height:34px;border-radius:3px;background:var(--t);background-image:repeating-linear-gradient(#ffffff66 0 1px,transparent 1px 3.4px)}
+.cube{width:10px;height:10px;border-radius:2px;background:var(--o)}
+.big{width:70px;height:70px;border-radius:8px;background:var(--th);display:grid;place-items:center;color:#fff;font-weight:700;font-size:.9rem}
+.controls{margin-top:16px;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.controls label{font-weight:600}
+input[type=range]{flex:1 1 220px;min-width:160px;accent-color:var(--h)}
+input[type=number]{width:92px;font:inherit;font-size:1.1rem;padding:6px 8px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+.act{font:inherit;font-weight:600;font-size:1rem;padding:9px 16px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.act:hover{border-color:var(--ink)}
+.chk{display:flex;gap:6px;align-items:center;cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:var(--h)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.inner{transition:none}.col{transition:none}}
+@media (max-width:520px){.flat{width:26px;height:26px;background-size:2.6px 2.6px}.rod{height:26px;width:8px}.cube{width:8px;height:8px}.big{width:54px;height:54px}.btns button{width:40px;height:40px}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Place value flip chart</h1>
+  <p class="sub">Flip the digits to build any number from 100 to 1000.</p>
+
+  <section class="readout" aria-live="polite">
+    <div class="num" id="num">345</div>
+    <div class="words" id="words"></div>
+    <div class="expanded" id="exp"></div>
+  </section>
+
+  <section class="chart" id="chart" aria-label="Place value chart"></section>
+
+  <section class="controls">
+    <label for="slider">Number</label>
+    <input type="range" id="slider" min="100" max="1000" value="345">
+    <input type="number" id="field" min="100" max="1000" value="345" aria-label="Type a number from 100 to 1000">
+    <button class="act" id="rand" type="button">Random number</button>
+    <button class="act" id="say" type="button">Say it</button>
+    <label class="chk"><input type="checkbox" id="showBlocks" checked> Show blocks</label>
+  </section>
+</main>
+
+<script>
+const PLACES=[
+  {k:'th',val:1000,name:'Thousands'},
+  {k:'h',val:100,name:'Hundreds'},
+  {k:'t',val:10,name:'Tens'},
+  {k:'o',val:1,name:'Ones'}
+];
+const ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+let n=345;
+
+const digits=v=>({th:Math.floor(v/1000),h:Math.floor(v%1000/100),t:Math.floor(v%100/10),o:v%10});
+function words(v){
+  if(v===1000)return 'one thousand';
+  const h=Math.floor(v/100),r=v%100;
+  let s=ONES[h]+' hundred';
+  if(r)s+=' '+(r<20?ONES[r]:TENS[Math.floor(r/10)]+(r%10?'-'+ONES[r%10]:''));
+  return s;
+}
+function can(p,d){
+  const g=digits(n);
+  if(n===1000)return d<0&&(p.k==='h'||p.k==='th');
+  if(p.k==='th')return d>0;
+  const v=g[p.k]+d;
+  return v>=(p.k==='h'?1:0)&&v<=9;
+}
+function step(p,d){
+  if(!can(p,d))return;
+  const g=digits(n);
+  if(n===1000)n=900;
+  else if(p.k==='th')n=1000;
+  else{g[p.k]+=d;n=g.h*100+g.t*10+g.o}
+  render();
+}
+
+const chart=document.getElementById('chart');
+PLACES.forEach(p=>{
+  const col=document.createElement('div');
+  col.className='col';col.dataset.k=p.k;
+  col.innerHTML=
+    '<h2>'+p.name+'</h2><div class="worth">worth '+p.val.toLocaleString('en-US')+' each</div>'+
+    '<div class="card" role="img"><div class="inner"><div class="face front"></div><div class="face back"></div></div></div>'+
+    '<div class="btns"><button type="button" data-d="-1" aria-label="Decrease '+p.name.toLowerCase()+'">\u2212</button>'+
+    '<button type="button" data-d="1" aria-label="Increase '+p.name.toLowerCase()+'">+</button></div>'+
+    '<div class="blocks" aria-hidden="true"></div>';
+  col.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>step(p,+b.dataset.d)));
+  chart.appendChild(col);
+  p.el=col;
+});
+
+function setCard(card,v){
+  if(card.dataset.v===String(v))return;
+  const first=card.dataset.v===undefined;
+  card.dataset.v=v;
+  const faces=card.querySelectorAll('.face');
+  if(first){faces[0].textContent=v;return}
+  const flipped=card.classList.contains('flipped');
+  faces[flipped?0:1].textContent=v;
+  card.classList.toggle('flipped');
+}
+function blocksHTML(k,c){
+  if(k==='th')return c?'<div class="big">1,000</div>':'';
+  const cls={h:'flat',t:'rod',o:'cube'}[k];
+  return ('<i class="'+cls+'"></i>').repeat(c);
+}
+
+function render(){
+  const g=digits(n);
+  document.getElementById('num').textContent=n.toLocaleString('en-US');
+  document.getElementById('words').textContent=words(n).replace(/^./,c=>c.toUpperCase());
+  const parts=PLACES.filter(p=>g[p.k]>0).map(p=>'<b class="c-'+p.k+'">'+(g[p.k]*p.val).toLocaleString('en-US')+'</b>');
+  document.getElementById('exp').innerHTML=parts.join(' + ');
+  PLACES.forEach(p=>{
+    setCard(p.el.querySelector('.card'),g[p.k]);
+    p.el.querySelector('.card').setAttribute('aria-label',p.name+': '+g[p.k]);
+    p.el.classList.toggle('dim',g[p.k]===0);
+    p.el.querySelector('.blocks').innerHTML=blocksHTML(p.k,g[p.k]);
+    const [minus,plus]=p.el.querySelectorAll('button');
+    minus.disabled=!can(p,-1);plus.disabled=!can(p,1);
+  });
+  document.getElementById('slider').value=n;
+  const f=document.getElementById('field');
+  if(document.activeElement!==f)f.value=n;
+}
+
+document.getElementById('slider').addEventListener('input',e=>{n=+e.target.value;render()});
+document.getElementById('field').addEventListener('input',e=>{
+  const v=parseInt(e.target.value,10);
+  if(v>=100&&v<=1000){n=v;render()}
+});
+document.getElementById('field').addEventListener('blur',()=>{document.getElementById('field').value=n});
+document.getElementById('rand').addEventListener('click',()=>{
+  let v;do{v=100+Math.floor(Math.random()*901)}while(v===n);
+  n=v;render();
+});
+document.getElementById('say').addEventListener('click',()=>{
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(words(n));
+    u.lang='en-US';u.rate=.85;speechSynthesis.speak(u);
+  }catch(e){}
+});
+document.getElementById('showBlocks').addEventListener('change',e=>{
+  document.querySelectorAll('.blocks').forEach(b=>b.classList.toggle('off',!e.target.checked));
+});
+render();
+</script>
+</body>
+</html>
